@@ -54,23 +54,45 @@ These limitations are deliberate. Adding more realism would make the data harder
 
 ## Usage
 
-If you've just cloned this repo, the easiest way to get going is to decompress the committed transactions file:
+## Usage
 
-```bash
-python load.py
+This repo includes the dataset already, except for the largest file (`transactions.csv.gz`, around 76MB). You'll generate that one locally with the included script. Takes about 30 seconds.
+
+### What you need
+
+- Python 3.9 or newer (most Macs and Linux machines have this; check by running `python3 --version` in a terminal)
+- No other libraries, no `pip install` needed — the script uses only Python's standard library
+
+### Generate the transactions file
+
+From the project folder, run:
+
+```
+python3 generate.py --output-dir ./output --seed 42
 ```
 
-This unzips `output/transactions.csv.gz` into `output/transactions.csv`. The other CSVs are committed uncompressed.
+This creates `transactions.csv.gz` inside the `output/` folder along with the other CSVs. The seed is what makes the data reproducible: the same seed always produces the same data. Keep it at 42 if you want to match what's described in the analyses; change it if you want a different random dataset.
 
-If you'd rather regenerate from scratch (same seed, same data):
+### Decompress transactions (optional)
 
-```bash
-python generate.py --output-dir ./output --seed 42
+The transactions file is saved compressed (`.gz`) to keep it small. Most tools can read `.gz` files directly — DuckDB, pandas, Snowflake, BigQuery, Postgres all handle them natively. You usually don't need to decompress.
+
+If you do want a plain CSV (around 400MB uncompressed), run:
+
+```
+python3 load.py
 ```
 
-The seed defaults to 42. Change it if you want different random data; keep it the same to get reproducible results.
+This unzips `output/transactions.csv.gz` into `output/transactions.csv` next to it.
 
-Output is CSVs ready to load into Snowflake, BigQuery, DuckDB, Postgres, or any other database. No external dependencies — the script uses only Python standard library.
+### Loading the data
+
+All output files are standard CSVs ready to load into any database. Examples:
+
+- **DuckDB:** `SELECT * FROM read_csv_auto('output/transactions.csv.gz')`
+- **Snowflake / BigQuery:** upload via the web UI or use their loader tools
+- **Postgres:** `\copy customers FROM 'output/customers.csv' CSV HEADER`
+- **pandas:** `pd.read_csv('output/customers.csv')`
 
 ## License
 
